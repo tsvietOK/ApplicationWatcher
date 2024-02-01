@@ -5,7 +5,8 @@ internal class Program
 {
     private static string LogPath = "process.log";
     private static string LogMessage = "{0} - Process {1} has been created, path is: {2}, arguments: {3}";
-    private static void Main(string[] args)
+
+    private static async Task Main(string[] args)
     {
         if (args.Length == 0)
         {
@@ -43,7 +44,7 @@ internal class Program
         ManagementEventWatcher watcher = new(query);
         watcher.Options.Timeout = new TimeSpan(0, 0, 10);
 
-        watcher.EventArrived += (sender, e) =>
+        watcher.EventArrived += async (sender, e) =>
         {
             var date = DateTime.Now;
             // Display information from the event
@@ -55,8 +56,8 @@ internal class Program
 
             Console.WriteLine(logMessage);
 
-            // Save logs to a file
-            File.AppendAllText(LogPath, logMessage + Environment.NewLine);
+            // Save logs to a file asynchronously
+            await File.AppendAllTextAsync(LogPath, logMessage + Environment.NewLine);
         };
 
         watcher.Start();
