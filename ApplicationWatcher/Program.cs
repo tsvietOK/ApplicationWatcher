@@ -4,9 +4,9 @@ using System.Management;
 internal class Program
 {
     private static string LogPath = "process.log";
+    private static string LogMessage = "{0} - Process {1} has been created, path is: {2}, arguments: {3}";
     private static void Main(string[] args)
     {
-
         if (args.Length == 0)
         {
             Console.WriteLine("Please provide a process name");
@@ -22,6 +22,10 @@ internal class Program
             Console.WriteLine($"No processes with name '{processName}' found");
             return;
         }
+        else
+        {
+            Console.WriteLine($"Found {processes.Length} processes with name '{processName}'");
+        }
 
         queryPart = $"TargetInstance.ParentProcessId = {processes[0].Id}";
 
@@ -32,27 +36,22 @@ internal class Program
             queryPart += $" or TargetInstance.ParentProcessId = {id}";
         }
 
-        WqlEventQuery query =
-            new WqlEventQuery("__InstanceCreationEvent",
-            new TimeSpan(0, 0, 1),
-            $"TargetInstance isa \"Win32_Process\" and {queryPart}");
+        WqlEventQuery query = new("__InstanceCreationEvent", new TimeSpan(0, 0, 1), $"TargetInstance isa \"Win32_Process\" and {queryPart}");
 
         // Initialize an event watcher and subscribe to events
         // that match this query
-        ManagementEventWatcher watcher = new()
-        {
-            Query = query
-        };
+        ManagementEventWatcher watcher = new(query);
         watcher.Options.Timeout = new TimeSpan(0, 0, 10);
 
         watcher.EventArrived += (sender, e) =>
         {
             var date = DateTime.Now;
             // Display information from the event
-            var instanceName = ((ManagementBaseObject)e.NewEvent["TargetInstance"])["Name"];
-            var executablePath = ((ManagementBaseObject)e.NewEvent["TargetInstance"])["ExecutablePath"];
-            var commandLine = ((ManagementBaseObject)e.NewEvent["TargetInstance"])["CommandLine"];
-            string logMessage = $"{date:dd-MM-yyyy HH:mm:ss} - Process {instanceName} has been created, path is: {executablePath}, arguments: {commandLine}";
+            var newEvent = (ManagementBaseObject)e.NewEvent["TargetInstance"];
+            var instanceName = newEvent["Name"];
+            var executablePath = newEvent["ExecutablePath"];
+            var commandLine = newEvent["CommandLine"];
+            string logMessage = string.Format(LogMessage, date, instanceName, executablePath, commandLine);
 
             Console.WriteLine(logMessage);
 
