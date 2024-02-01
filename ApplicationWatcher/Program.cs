@@ -10,34 +10,17 @@ internal class Program
     {
         if (args.Length == 0)
         {
-            Console.WriteLine("Please provide a process name");
+            Console.WriteLine("Please provide a process id");
             return;
         }
 
-        var processName = args[0];
-        var processes = Process.GetProcessesByName(processName);
-        string queryPart = "";
-
-        if (processes.Length == 0)
+        if (!int.TryParse(args[0], out int processId))
         {
-            Console.WriteLine($"No processes with name '{processName}' found");
+            Console.WriteLine($"Please provide a valid process id, current value '{args[0]}'");
             return;
         }
-        else
-        {
-            Console.WriteLine($"Found {processes.Length} processes with name '{processName}'");
-        }
 
-        queryPart = $"TargetInstance.ParentProcessId = {processes[0].Id}";
-
-        for (int i = 1; i < processes.Length; i++)
-        {
-            Process? process = processes[i];
-            var id = process.Id;
-            queryPart += $" or TargetInstance.ParentProcessId = {id}";
-        }
-
-        string query = $"SELECT * FROM __InstanceCreationEvent WITHIN 1 WHERE TargetInstance ISA 'Win32_Process' AND {queryPart}";
+        string query = $"SELECT * FROM __InstanceCreationEvent WITHIN 0.5 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.ParentProcessId = {processId}";
         // Initialize an event watcher and subscribe to events
         // that match this query
         ManagementEventWatcher watcher = new(@"\\.\root\CIMV2", query);

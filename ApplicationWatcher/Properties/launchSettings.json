@@ -2,7 +2,7 @@
   "profiles": {
     "ApplicationWatcher": {
       "commandName": "Project",
-      "commandLineArgs": "powershell"
+      "commandLineArgs": "38108"
     }
   }
 }
