@@ -37,11 +37,10 @@ internal class Program
             queryPart += $" or TargetInstance.ParentProcessId = {id}";
         }
 
-        WqlEventQuery query = new("__InstanceCreationEvent", new TimeSpan(0, 0, 1), $"TargetInstance isa \"Win32_Process\" and {queryPart}");
-
+        string query = $"SELECT * FROM __InstanceCreationEvent WITHIN 1 WHERE TargetInstance ISA 'Win32_Process' AND {queryPart}";
         // Initialize an event watcher and subscribe to events
         // that match this query
-        ManagementEventWatcher watcher = new(query);
+        ManagementEventWatcher watcher = new(@"\\.\root\CIMV2", query);
         watcher.Options.Timeout = new TimeSpan(0, 0, 10);
 
         watcher.EventArrived += async (sender, e) =>
