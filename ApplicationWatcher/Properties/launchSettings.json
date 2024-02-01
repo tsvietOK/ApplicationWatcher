@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ApplicationWatcher": {
+      "commandName": "Project",
+      "commandLineArgs": "powershell"
+    }
+  }
+}
